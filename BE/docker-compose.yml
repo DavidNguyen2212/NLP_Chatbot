@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatbot-express-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production.local # Chỉ định file môi trường
+
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+

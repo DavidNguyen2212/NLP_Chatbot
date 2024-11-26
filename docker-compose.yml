@@ -1,0 +1,53 @@
+services:
+  # Ollama Service
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    # docker exec -it ollama ollama run llama3.1:8b to run this model
+    networks:
+      - chatbot_network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./BE
+    container_name: chatbot-express-app
+    ports:
+      - "3000:3000"
+    networks:
+      - chatbot_network
+    depends_on:
+      - ollama
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./FE
+    container_name: chatbot-react-app
+    ports:
+      - "5173:5173"
+    networks:
+      - chatbot_network
+    depends_on:
+      - backend
+
+networks:
+  chatbot_network:
+    driver: bridge
+
+volumes:
+  ollama:
+    driver: local
